@@ -1,1 +1,39 @@
+name: build-ndk
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Install unzip and wget
+      run: sudo apt-get install -y unzip wget
+
+    - name: Download Android NDK r21e
+      run: |
+        wget https://dl.google.com/android/repository/android-ndk-r21e-linux-x86_64.zip
+        unzip android-ndk-r21e-linux-x86_64.zip
+
+    - name: Set ANDROID_NDK_HOME
+      run: echo "ANDROID_NDK_HOME=$HOME/android-ndk-r21e" >> $GITHUB_ENV
+
+    - name: Run ndk-build
+      run: |
+        export ANDROID_NDK_HOME=$HOME/android-ndk-r21e
+        cd jni
+        $ANDROID_NDK_HOME/ndk-build NDK_PROJECT_PATH=. APP_BUILD_SCRIPT=Android.mk APP_ABI="x86_64"
+        mkdir -p $GITHUB_WORKSPACE/out
+        cp -r libs $GITHUB_WORKSPACE/out/
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: serial-port-libs
+        path: out/libs
 
