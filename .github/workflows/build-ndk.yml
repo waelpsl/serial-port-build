@@ -17,23 +17,23 @@ jobs:
 
     - name: Download Android NDK r21e
       run: |
-        wget https://dl.google.com/android/repository/android-ndk-r21e-linux-x86_64.zip
-        unzip android-ndk-r21e-linux-x86_64.zip
+        wget https://dl.google.com/android/repository/android-ndk-r21e-linux-x86_64.zip -O ndk.zip
+        unzip ndk.zip -d $HOME
+        mv $HOME/android-ndk-r21e $HOME/ndk
 
     - name: Set ANDROID_NDK_HOME
-      run: echo "ANDROID_NDK_HOME=$HOME/android-ndk-r21e" >> $GITHUB_ENV
+      run: echo "ANDROID_NDK_HOME=$HOME/ndk" >> $GITHUB_ENV
 
     - name: Run ndk-build
       run: |
-        export ANDROID_NDK_HOME=$HOME/android-ndk-r21e
+        export ANDROID_NDK_HOME=$HOME/ndk
         cd jni
-        $ANDROID_NDK_HOME/ndk-build NDK_PROJECT_PATH=. APP_BUILD_SCRIPT=Android.mk APP_ABI="x86_64"
+        $ANDROID_NDK_HOME/ndk-build
         mkdir -p $GITHUB_WORKSPACE/out
-        cp -r libs $GITHUB_WORKSPACE/out/
+        cp -r ../libs $GITHUB_WORKSPACE/out
 
     - name: Upload artifact
       uses: actions/upload-artifact@v4
       with:
         name: serial-port-libs
-        path: out/libs
-
+        path: out/
